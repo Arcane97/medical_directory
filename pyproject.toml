@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "medical-directory"
+version = "0.1.0"
+description = ""
+authors = ["Kurbangaleev Ilnur <haker_ilnur_97@mail.ru>"]
+readme = "README.md"
+packages = [{include = "medical_directory"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
