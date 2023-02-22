@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "medical-directory"
+name = "medical_reference_books"
 version = "0.1.0"
 description = ""
 authors = ["Kurbangaleev Ilnur <haker_ilnur_97@mail.ru>"]
 readme = "README.md"
-packages = [{include = "medical_directory"}]
+packages = [{include = "medical_reference_books"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
