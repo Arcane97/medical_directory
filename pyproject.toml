@@ -8,6 +8,7 @@ packages = [{include = "medical_directory"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+django = "^4.1.7"
 
 
 [build-system]
