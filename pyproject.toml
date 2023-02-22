@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Kurbangaleev Ilnur <haker_ilnur_97@mail.ru>"]
 readme = "README.md"
-packages = [{include = "medical_reference_books"}]
+packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
