@@ -6,10 +6,17 @@ from . import serializers
 
 
 class ReferenceBookListView(GenericViewSet):
-    queryset = models.ReferenceBook.objects.all()
+    queryset = models.ReferenceBook.objects.all().only("id", "code", "name").order_by('id')
     serializer_class = serializers.ReferenceBookSerializer
 
-    # todo фильтрация с date
+    def get_queryset(self):
+        # todo вынести фильтрацию в другое место
+        queryset = super().get_queryset()
+        date = self.request.query_params.get('date', None)
+        if date is not None:
+            queryset = queryset.filter(referencebookversion__date__lte=date).distinct()
+
+        return queryset
 
     def list(self, request, *args, **kwargs):
         """
