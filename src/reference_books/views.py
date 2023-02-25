@@ -30,29 +30,12 @@ class ReferenceBookListView(GenericViewSet):
 
 
 class ReferenceBookElementListView(GenericViewSet):
-    queryset = models.ReferenceBookElement.objects.all().only("code", "value")
     serializer_class = serializers.ReferenceBookElementSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(ref_book_version__ref_book_id=self.kwargs["id"])
+        ref_book_id = self.kwargs["id"]
         version = self.request.query_params.get("version", None)
-        if version is not None:
-            queryset = queryset.filter(ref_book_version__version=version)
-        else:
-            # Будем брать текущую версию. Текущей является та версия, дата начала действия
-            # которой позже всех остальных версий данного справочника, но не позже текущей даты.
-            current_date = localdate()
-            current_version = (
-                models.ReferenceBookVersion.objects
-                .filter(
-                    ref_book_id=OuterRef('ref_book_version__ref_book_id'),
-                    date__lte=current_date,
-                )
-                .order_by('-date')
-                .values('id')[:1]
-            )
-            queryset = queryset.filter(ref_book_version_id=Subquery(current_version))
+        queryset = services.get_queryset_of_ref_book_elements(ref_book_id, version)
         return queryset
 
     def list(self, request, *args, **kwargs):
