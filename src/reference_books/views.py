@@ -1,5 +1,4 @@
-from django.db.models import OuterRef, Subquery
-from django.utils.timezone import localdate
+from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -60,9 +59,14 @@ class ElementValidationView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         ref_book_id = self.kwargs["id"]
-        # todo вызвать ошибку если нет code или value
         code = self.request.query_params.get("code", None)
         value = self.request.query_params.get("value", None)
         version = self.request.query_params.get("version", None)
+        if code is None:
+            return Response({"error": 'Параметр code обязателен.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if value is None:
+            return Response({"error": 'Параметр value обязателен.'},
+                            status=status.HTTP_400_BAD_REQUEST)
         exists = services.validate_elements(ref_book_id=ref_book_id, code=code, value=value, version=version)
         return Response({"exists": exists})
