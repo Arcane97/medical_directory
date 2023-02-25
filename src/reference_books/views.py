@@ -1,10 +1,12 @@
 from django.db.models import OuterRef, Subquery
 from django.utils.timezone import localdate
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from . import models
 from . import serializers
+from . import services
 
 
 class ReferenceBookListView(GenericViewSet):
@@ -48,3 +50,19 @@ class ReferenceBookElementListView(GenericViewSet):
         serializer = self.get_serializer(queryset, many=True)
         data = {"elements": serializer.data}
         return Response(data)
+
+
+class ElementValidationView(GenericAPIView):
+    """
+    Валидация элемента справочника - это проверка на то,
+    что элемент с данным кодом и значением присутствует в указанной версии справочника.
+    """
+
+    def get(self, request, *args, **kwargs):
+        ref_book_id = self.kwargs["id"]
+        # todo вызвать ошибку если нет code или value
+        code = self.request.query_params.get("code", None)
+        value = self.request.query_params.get("value", None)
+        version = self.request.query_params.get("version", None)
+        exists = services.validate_elements(ref_book_id=ref_book_id, code=code, value=value, version=version)
+        return Response({"exists": exists})
