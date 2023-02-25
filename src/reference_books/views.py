@@ -1,3 +1,4 @@
+from django.db.models import OuterRef, Subquery
 from django.utils.timezone import localdate
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -41,14 +42,17 @@ class ReferenceBookElementListView(GenericViewSet):
         else:
             # Будем брать текущую версию. Текущей является та версия, дата начала действия
             # которой позже всех остальных версий данного справочника, но не позже текущей даты.
-            date = localdate()
-            latest_version = (
+            current_date = localdate()
+            current_version = (
                 models.ReferenceBookVersion.objects
-                .filter(date__lte=date)
-                .only("id")
-                .order_by("date").last()
+                .filter(
+                    ref_book_id=OuterRef('ref_book_version__ref_book_id'),
+                    date__lte=current_date,
+                )
+                .order_by('-date')
+                .values('id')[:1]
             )
-            queryset = queryset.filter(ref_book_version_id=latest_version)
+            queryset = queryset.filter(ref_book_version_id=Subquery(current_version))
         return queryset
 
     def list(self, request, *args, **kwargs):
