@@ -20,6 +20,9 @@ class ReferenceBook(models.Model):
         verbose_name = 'Справочник'
         verbose_name_plural = 'Справочники'
 
+    def __str__(self):
+        return f'Справочник `{self.name}`'
+
 
 class ReferenceBookVersion(models.Model):
     ref_book = models.ForeignKey(
