@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils.timezone import localdate
 from rest_framework import status
 
-from .. import models
+from .. import models, serializers
 
 
 class ReferenceBookListViewTestCase(TestCase):
@@ -74,4 +74,102 @@ class ReferenceBookListViewTestCase(TestCase):
             [self.ref_book1.code, self.ref_book3.code]
         )
 
-# todo добавить тесты для остальных вьюшек
+
+class ReferenceBookElementListViewTest(TestCase):
+    def setUp(self):
+        self.ref_book = models.ReferenceBook.objects.create(code='test_ref_book', name='Test Reference Book')
+        self.version1 = models.ReferenceBookVersion.objects.create(
+            ref_book=self.ref_book,
+            version='1.0',
+            date=localdate(),
+        )
+        self.element1 = models.ReferenceBookElement.objects.create(
+            ref_book_version=self.version1,
+            code='test_element1',
+            value='Test Element'
+        )
+        self.element2 = models.ReferenceBookElement.objects.create(
+            ref_book_version=self.version1,
+            code='test_element2',
+            value='Test Element'
+        )
+
+    def test_get_elements_by_ref_book_id(self):
+        url = reverse('refbooks-elements-list', kwargs={"id": self.ref_book.id})
+        response = self.client.get(url)
+        serializer = serializers.ReferenceBookElementSerializer([self.element1, self.element2], many=True)
+        self.assertEqual(response.data, {'elements': serializer.data})
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_elements_by_ref_book_id_and_version(self):
+        url = reverse('refbooks-elements-list', kwargs={"id": self.ref_book.id})
+        response = self.client.get(url, {'version': self.version1.version})
+        serializer = serializers.ReferenceBookElementSerializer([self.element1, self.element2], many=True)
+        self.assertEqual(response.data, {'elements': serializer.data})
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_elements_by_ref_book_id_and_invalid_version(self):
+        url = reverse('refbooks-elements-list', kwargs={"id": self.ref_book.id})
+        response = self.client.get(url, {'version': "2.0"})
+        self.assertEqual(response.data, {'elements': []})
+        self.assertEqual(response.status_code, 200)
+
+
+class ElementValidationViewTestCase(TestCase):
+    def setUp(self):
+        self.ref_book = models.ReferenceBook.objects.create(code='ref_book1', name='Справочник 1')
+        self.version1 = models.ReferenceBookVersion.objects.create(ref_book=self.ref_book, version='1.0',
+                                                                   date=localdate() - timedelta(days=1))
+        self.version2 = models.ReferenceBookVersion.objects.create(ref_book=self.ref_book, version='2.0',
+                                                                   date=localdate())
+
+        ref_book_element_1 = models.ReferenceBookElement.objects.create(
+            code="elem1",
+            value="Element 1",
+            ref_book_version=self.version2,
+        )
+        ref_book_element_2 = models.ReferenceBookElement.objects.create(
+            code="elem2",
+            value="Element 2",
+            ref_book_version=self.version2,
+        )
+        ref_book_element_3 = models.ReferenceBookElement.objects.create(
+            code="elem3",
+            value="Element 3",
+            ref_book_version=self.version1,
+        )
+
+    def test_validate_element_with_valid_data(self):
+        url = reverse("element-validation", kwargs={"id": self.ref_book.id})
+        data = {"code": "elem1", "value": "Element 1"}
+        response = self.client.get(url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["exists"], True)
+
+    def test_validate_element_with_valid_data_and_version(self):
+        url = reverse("element-validation", kwargs={"id": self.ref_book.id})
+        data = {"code": "elem3", "value": "Element 3", "version": "1.0"}
+        response = self.client.get(url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["exists"], True)
+
+    def test_validate_element_with_invalid_data(self):
+        url = reverse("element-validation", kwargs={"id": self.ref_book.id})
+        data = {"code": "elem1", "value": "Invalid value"}
+        response = self.client.get(url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["exists"], False)
+
+    def test_validate_element_missing_code_parameter(self):
+        url = reverse("element-validation", kwargs={"id": self.ref_book.id})
+        data = {"value": "value 1", "version": "1.0"}
+        response = self.client.get(url, data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "Параметр code обязателен.")
+
+    def test_validate_element_missing_value_parameter(self):
+        url = reverse("element-validation", kwargs={"id": self.ref_book.id})
+        data = {"code": "100", "version": "1.0"}
+        response = self.client.get(url, data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "Параметр value обязателен.")
