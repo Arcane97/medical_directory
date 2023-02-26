@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import OuterRef, Subquery
+from django.forms import BaseInlineFormSet
 from django.utils.timezone import localdate
 
 from . import models
@@ -7,12 +8,27 @@ from . import models
 admin.site.register(models.ReferenceBookElement)
 
 
+class ReferenceBookVersionFormSet(BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.queryset = self.queryset.filter(ref_book=self.instance)
+
+
+class ReferenceBookVersionInline(admin.TabularInline):
+    model = models.ReferenceBookVersion
+    extra = 0
+    formset = ReferenceBookVersionFormSet
+    fields = ("version", "date")
+    readonly_fields = ("version", "date")
+    can_delete = False
+    show_change_link = True
+
+
 @admin.register(models.ReferenceBook)
 class ReferenceBookAdmin(admin.ModelAdmin):
-    # todo При редактировании справочника на этой
-    #      же странице должен быть отображен список имеющихся версий данного справочника.
     list_display = ("id", "code", "name", "current_version", "version_date")
     list_display_links = ("id", "code", "name")
+    inlines = (ReferenceBookVersionInline,)
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
