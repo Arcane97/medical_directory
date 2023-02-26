@@ -59,6 +59,7 @@ class ElementValidationView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         ref_book_id = self.kwargs["id"]
+        # todo добавить сериализатор для query_params
         code = self.request.query_params.get("code", None)
         value = self.request.query_params.get("value", None)
         version = self.request.query_params.get("version", None)
