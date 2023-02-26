@@ -59,8 +59,8 @@ class ReferenceBookListViewTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['refbooks']), 3)
         self.assertEqual(
-            set([b['code'] for b in response.data['refbooks']]),
-            {self.ref_book1.code, self.ref_book2.code, self.ref_book3.code}
+            list([b['code'] for b in response.data['refbooks']]),
+            [self.ref_book1.code, self.ref_book2.code, self.ref_book3.code]
         )
 
     def test_list_ref_books_with_date(self):
@@ -70,8 +70,8 @@ class ReferenceBookListViewTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['refbooks']), 2)
         self.assertEqual(
-            set([b['code'] for b in response.data['refbooks']]),
-            {self.ref_book1.code, self.ref_book3.code}
+            list([b['code'] for b in response.data['refbooks']]),
+            [self.ref_book1.code, self.ref_book3.code]
         )
 
 # todo добавить тесты для остальных вьюшек

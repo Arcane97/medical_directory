@@ -16,7 +16,7 @@ class ReferenceBookSerializerTestCase(TestCase):
     def test_serialized_fields(self):
         serializer = ReferenceBookSerializer(instance=self.book)
         data = serializer.data
-        self.assertEqual(set(data.keys()), {'id', 'code', 'name'})
+        self.assertEqual(list(data.keys()), ['id', 'code', 'name'])
         self.assertEqual(data['id'], self.book.id)
         self.assertEqual(data['code'], self.book.code)
         self.assertEqual(data['name'], self.book.name)
@@ -42,6 +42,6 @@ class ReferenceBookElementSerializerTestCase(TestCase):
     def test_serialized_fields(self):
         serializer = ReferenceBookElementSerializer(instance=self.element)
         data = serializer.data
-        self.assertEqual(set(data.keys()), {'code', 'value'})
+        self.assertEqual(list(data.keys()), ['code', 'value'])
         self.assertEqual(data['code'], self.element.code)
         self.assertEqual(data['value'], self.element.value)
