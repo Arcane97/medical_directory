@@ -42,22 +42,17 @@ class ReferenceBookAdmin(admin.ModelAdmin):
         return obj.version_date
 
 
+class ReferenceBookElementInline(admin.TabularInline):
+    model = models.ReferenceBookElement
+    extra = 0
+
+
 @admin.register(models.ReferenceBookVersion)
 class ReferenceBookVersionAdmin(admin.ModelAdmin):
     list_display = ("ref_book__code", "ref_book__name", "version", "date")
     list_display_links = ("version", "date")
     list_select_related = ("ref_book",)
-    update_fieldsets = (
-        (None, {
-            'fields': ('ref_book', 'version', 'date')
-        }),
-        # ("Справочник", {
-        #     'fields': ('ref_book__code', 'ref_book__name')  # , 'ref_book__description'
-        # }),
-    )
-
-    # todo  При редактировании версии необходима возможность на этой же странице заполнить
-    #       элементы справочника в этой версии
+    inlines = (ReferenceBookElementInline,)
 
     @admin.display(description='Код справочника')
     def ref_book__code(self, obj):
@@ -66,8 +61,3 @@ class ReferenceBookVersionAdmin(admin.ModelAdmin):
     @admin.display(description='Наименование справочника')
     def ref_book__name(self, obj):
         return obj.ref_book.name
-
-    def get_fieldsets(self, request, obj=None):
-        if obj:
-            return self.update_fieldsets
-        return super().get_fieldsets(request, obj)
