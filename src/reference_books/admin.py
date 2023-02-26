@@ -4,7 +4,6 @@ from django.utils.timezone import localdate
 
 from . import models
 
-admin.site.register(models.ReferenceBookVersion)
 admin.site.register(models.ReferenceBookElement)
 
 
@@ -41,3 +40,34 @@ class ReferenceBookAdmin(admin.ModelAdmin):
     @admin.display(description='Дата начала действия версии', empty_value='Нет текущей версии')
     def version_date(self, obj):
         return obj.version_date
+
+
+@admin.register(models.ReferenceBookVersion)
+class ReferenceBookVersionAdmin(admin.ModelAdmin):
+    list_display = ("ref_book__code", "ref_book__name", "version", "date")
+    list_display_links = ("version", "date")
+    list_select_related = ("ref_book",)
+    update_fieldsets = (
+        (None, {
+            'fields': ('ref_book', 'version', 'date')
+        }),
+        # ("Справочник", {
+        #     'fields': ('ref_book__code', 'ref_book__name')  # , 'ref_book__description'
+        # }),
+    )
+
+    # todo  При редактировании версии необходима возможность на этой же странице заполнить
+    #       элементы справочника в этой версии
+
+    @admin.display(description='Код справочника')
+    def ref_book__code(self, obj):
+        return obj.ref_book.code
+
+    @admin.display(description='Наименование справочника')
+    def ref_book__name(self, obj):
+        return obj.ref_book.name
+
+    def get_fieldsets(self, request, obj=None):
+        if obj:
+            return self.update_fieldsets
+        return super().get_fieldsets(request, obj)
