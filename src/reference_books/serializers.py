@@ -13,3 +13,7 @@ class ReferenceBookElementSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ReferenceBookElement
         fields = ['code', 'value']
+
+
+class ReferenceBookListViewQueryParamSerializer(serializers.Serializer):
+    date = serializers.DateField(required=False)

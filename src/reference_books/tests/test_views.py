@@ -74,6 +74,20 @@ class ReferenceBookListViewTestCase(TestCase):
             [self.ref_book1.code, self.ref_book3.code]
         )
 
+    def test_list_ref_books_with_invalid_date(self):
+        url = reverse('referencebook-list')
+        invalid_date = 'invalid date'
+        response = self.client.get(url, {'date': invalid_date})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data,
+            {
+                "date": [
+                    "Неправильный формат date. Используйте один из этих форматов: YYYY-MM-DD."
+                ]
+            }
+        )
+
 
 class ReferenceBookElementListViewTest(TestCase):
     def setUp(self):

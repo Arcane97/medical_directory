@@ -24,6 +24,9 @@ class ReferenceBookListView(GenericViewSet):
         """
         Если нужен будет пагинатор, убрать этот метод и в пагинаторе, вместо "results", указать "refbooks".
         """
+        query_params_serializer = serializers.ReferenceBookListViewQueryParamSerializer(data=self.request.query_params)
+        if not query_params_serializer.is_valid():
+            return Response(query_params_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         data = {"refbooks": serializer.data}
