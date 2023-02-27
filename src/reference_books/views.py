@@ -96,12 +96,6 @@ class ReferenceBookElementListView(GenericViewSet):
 
     @extend_schema(
         parameters=[
-            # OpenApiParameter(
-            #     name='id',
-            #     description='Идентификатор справочника',
-            #     required=True,
-            #     type=OpenApiTypes.INT,
-            # ),
             OpenApiParameter(
                 name='version',
                 description='Версия справочника. </br>Если не указана, '
@@ -119,6 +113,38 @@ class ReferenceBookElementListView(GenericViewSet):
                 response=serializers.ReferenceBookElementListViewQueryParamSerializer,
             ),
         },
+        examples=[
+            OpenApiExample(
+                'OK',
+                value={
+                    "elements": [
+                        {
+                            "code": "J00",
+                            "value": " ()"
+                        },
+                        {
+                            "code": "J01",
+                            "value": " "
+                        }
+                    ]
+                }
+                ,
+                status_codes=[status.HTTP_200_OK],
+                response_only=True,
+            ),
+            OpenApiExample(
+                'Bad request',
+                summary='Ошибка отправки данных',
+                description="Убедитесь, что это значение содержит не более 50 символов.",
+                value={
+                    "version": [
+                        "Убедитесь, что это значение содержит не более 50 символов."
+                    ]
+                },
+                status_codes=[status.HTTP_400_BAD_REQUEST],
+                response_only=True,
+            )
+        ]
     )
     def list(self, request, *args, **kwargs):
         """
