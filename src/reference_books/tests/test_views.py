@@ -122,11 +122,25 @@ class ReferenceBookElementListViewTest(TestCase):
         self.assertEqual(response.data, {'elements': serializer.data})
         self.assertEqual(response.status_code, 200)
 
-    def test_get_elements_by_ref_book_id_and_invalid_version(self):
+    def test_get_elements_by_ref_book_id_and_non_existing_version(self):
         url = reverse('refbooks-elements-list', kwargs={"id": self.ref_book.id})
         response = self.client.get(url, {'version': "2.0"})
         self.assertEqual(response.data, {'elements': []})
         self.assertEqual(response.status_code, 200)
+
+    def test_get_elements_by_invalid_version(self):
+        url = reverse('refbooks-elements-list', kwargs={"id": self.ref_book.id})
+        invalid_version = "1" * 52
+        response = self.client.get(url, {'version': invalid_version})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {
+                "version": [
+                    "Убедитесь, что это значение содержит не более 50 символов."
+                ]
+            }
+        )
 
 
 class ElementValidationViewTestCase(TestCase):

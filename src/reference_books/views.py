@@ -48,6 +48,10 @@ class ReferenceBookElementListView(GenericViewSet):
         использовать mixins.ListModelMixin,
         и в пагинаторе, вместо "results", указать "elements".
         """
+        query_params_serializer = serializers.ReferenceBookElementListViewQueryParamSerializer(
+            data=self.request.query_params)
+        if not query_params_serializer.is_valid():
+            return Response(query_params_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         data = {"elements": serializer.data}

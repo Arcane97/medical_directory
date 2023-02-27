@@ -17,3 +17,7 @@ class ReferenceBookElementSerializer(serializers.ModelSerializer):
 
 class ReferenceBookListViewQueryParamSerializer(serializers.Serializer):
     date = serializers.DateField(required=False)
+
+
+class ReferenceBookElementListViewQueryParamSerializer(serializers.Serializer):
+    version = serializers.CharField(max_length=50, required=False)
