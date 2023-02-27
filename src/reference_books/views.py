@@ -37,17 +37,39 @@ class ReferenceBookListView(GenericViewSet):
             status.HTTP_200_OK: serializers.ReferenceBookSerializer,
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=serializers.ReferenceBookListViewQueryParamSerializer,
-                examples=[OpenApiExample(  # todo разобраться почему нет примера
-                    'Bad request',
-                    summary='Ошибка отправки данных',
-                    description='Неправильный формат date. Используйте один из этих форматов: YYYY-MM-DD.',
-                    value={
-                        'date': "Неправильный формат date. Используйте один из этих форматов: YYYY-MM-DD.",
-                    },
-                    response_only=True,
-                )],
             ),
         },
+        examples=[
+            OpenApiExample(
+                'OK',
+                value={
+                    "refbooks": [
+                        {
+                            "id": "1",
+                            "code": "MS1",
+                            "name": " "
+                        },
+                        {
+                            "id": "2",
+                            "code": "ICD-10",
+                            "name": " -10"
+                        },
+                    ]
+                },
+                status_codes=[status.HTTP_200_OK],
+                response_only=True,
+            ),
+            OpenApiExample(
+                'Bad request',
+                summary='Ошибка отправки данных',
+                description='Неправильный формат date. Используйте один из этих форматов: YYYY-MM-DD.',
+                value={
+                    'date': "Неправильный формат date. Используйте один из этих форматов: YYYY-MM-DD.",
+                },
+                status_codes=[status.HTTP_400_BAD_REQUEST],
+                response_only=True,
+            )
+        ],
     )
     def list(self, request, *args, **kwargs):
         """
