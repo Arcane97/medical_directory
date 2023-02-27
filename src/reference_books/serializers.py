@@ -21,3 +21,9 @@ class ReferenceBookListViewQueryParamSerializer(serializers.Serializer):
 
 class ReferenceBookElementListViewQueryParamSerializer(serializers.Serializer):
     version = serializers.CharField(max_length=50, required=False)
+
+
+class ElementValidationViewQueryParamSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=100)
+    value = serializers.CharField(max_length=300)
+    version = serializers.CharField(max_length=50, required=False)

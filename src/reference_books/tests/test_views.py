@@ -188,16 +188,47 @@ class ElementValidationViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["exists"], False)
 
+    def test_validate_element_missing_code_and_value_parameter(self):
+        url = reverse("element-validation", kwargs={"id": self.ref_book.id})
+        data = {"version": "1.0"}
+        response = self.client.get(url, data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {
+                "code": [
+                    "Обязательное поле."
+                ],
+                "value": [
+                    "Обязательное поле."
+                ]
+            }
+        )
+
     def test_validate_element_missing_code_parameter(self):
         url = reverse("element-validation", kwargs={"id": self.ref_book.id})
         data = {"value": "value 1", "version": "1.0"}
         response = self.client.get(url, data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data["error"], "Параметр code обязателен.")
+        self.assertEqual(
+            response.data,
+            {
+                "code": [
+                    "Обязательное поле."
+                ]
+            }
+        )
 
     def test_validate_element_missing_value_parameter(self):
         url = reverse("element-validation", kwargs={"id": self.ref_book.id})
         data = {"code": "100", "version": "1.0"}
         response = self.client.get(url, data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data["error"], "Параметр value обязателен.")
+        self.assertEqual(
+            response.data,
+            {
+                "value": [
+                    "Обязательное поле."
+                ]
+            }
+        )
