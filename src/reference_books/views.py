@@ -1,6 +1,7 @@
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample, inline_serializer
 from rest_framework import status
+from rest_framework.fields import BooleanField
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -170,12 +171,6 @@ class ElementValidationView(GenericAPIView):
 
     @extend_schema(
         parameters=[
-            # OpenApiParameter(
-            #     name='id',
-            #     description='Идентификатор справочника',
-            #     required=True,
-            #     type=OpenApiTypes.INT,
-            # ),
             OpenApiParameter(
                 name='code',
                 description='Код элемента справочника',
@@ -200,11 +195,60 @@ class ElementValidationView(GenericAPIView):
             ),
         ],
         responses={
-            status.HTTP_200_OK: OpenApiTypes.BOOL,  # todo поменять
-            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-                response=serializers.ElementValidationViewQueryParamSerializer,
-            ),
+            status.HTTP_200_OK: inline_serializer('ElementValidationSerializer', {"exists": BooleanField()}),
+            status.HTTP_400_BAD_REQUEST: serializers.ElementValidationViewQueryParamSerializer,
         },
+        examples=[
+            OpenApiExample(
+                'Присутствует',
+                value={
+                    "exists": True,
+                },
+                status_codes=[status.HTTP_200_OK],
+                response_only=True,
+            ),
+            OpenApiExample(
+                'Отсутствует',
+                value={
+                    "exists": False,
+                },
+                status_codes=[status.HTTP_200_OK],
+                response_only=True,
+            ),
+            OpenApiExample(
+                'Ошибка code',
+                summary='Ошибка code',
+                value={
+                    "code": [
+                        "Обязательное поле."
+                    ]
+                },
+                status_codes=[status.HTTP_400_BAD_REQUEST],
+                response_only=True,
+            ),
+            OpenApiExample(
+                'Ошибка value',
+                summary='Ошибка value',
+                value={
+                    "value": [
+                        "Обязательное поле."
+                    ]
+                },
+                status_codes=[status.HTTP_400_BAD_REQUEST],
+                response_only=True,
+            ),
+            OpenApiExample(
+                'Ошибка version',
+                summary='Ошибка version',
+                value={
+                    "version": [
+                        "Убедитесь, что это значение содержит не более 50 символов."
+                    ]
+                },
+                status_codes=[status.HTTP_400_BAD_REQUEST],
+                response_only=True,
+            ),
+        ],
     )
     def get(self, request, *args, **kwargs):
         ref_book_id = self.kwargs["id"]
