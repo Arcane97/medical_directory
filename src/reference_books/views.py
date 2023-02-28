@@ -1,5 +1,4 @@
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample, inline_serializer
+from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import status
 from rest_framework.fields import BooleanField
 from rest_framework.generics import GenericAPIView
@@ -9,6 +8,10 @@ from rest_framework.viewsets import GenericViewSet
 from . import models
 from . import serializers
 from . import services
+from .schema_utils import DATE_PARAMETER, REFBOOKS_OK_EXAMPLE, REFBOOKS_BAD_REQUEST_EXAMPLE, VERSION_PARAMETER, \
+    ELEMENTS_LIST_OK_EXAMPLE, ELEMENTS_LIST_BAD_REQUEST_EXAMPLE, CODE_PARAMETER, VALUE_PARAMETER, \
+    ELEMENT_VALIDATION_EXISTS_EXAMPLE, ELEMENT_VALIDATION_NOT_EXISTS_EXAMPLE, ELEMENT_VALIDATION_CODE_ERROR_EXAMPLE, \
+    ELEMENT_VALIDATION_VALUE_ERROR_EXAMPLE, ELEMENT_VALIDATION_VERSION_ERROR_EXAMPLE
 
 
 class ReferenceBookListView(GenericViewSet):
@@ -24,52 +27,15 @@ class ReferenceBookListView(GenericViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter(
-                name='date',
-                description='Дата начала действия в формате ГГГГ-ММ-ДД. </br>'
-                            'Если указана, то должны возвратиться только те справочники, '
-                            'в которых имеются Версии с Датой начала действия раннее '
-                            'или равной указанной.',
-                required=False,
-                type=OpenApiTypes.DATE,
-            ),
+            DATE_PARAMETER,
         ],
         responses={
             status.HTTP_200_OK: serializers.ReferenceBookSerializer,
-            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-                response=serializers.ReferenceBookListViewQueryParamSerializer,
-            ),
+            status.HTTP_400_BAD_REQUEST: serializers.ReferenceBookListViewQueryParamSerializer,
         },
         examples=[
-            OpenApiExample(
-                'OK',
-                value={
-                    "refbooks": [
-                        {
-                            "id": "1",
-                            "code": "MS1",
-                            "name": " "
-                        },
-                        {
-                            "id": "2",
-                            "code": "ICD-10",
-                            "name": " -10"
-                        },
-                    ]
-                },
-                status_codes=[status.HTTP_200_OK],
-                response_only=True,
-            ),
-            OpenApiExample(
-                'Bad request',
-                summary='Ошибка отправки данных',
-                description='Неправильный формат date. Используйте один из этих форматов: YYYY-MM-DD.',
-                value={
-                    'date': "Неправильный формат date. Используйте один из этих форматов: YYYY-MM-DD.",
-                },
-                status_codes=[status.HTTP_400_BAD_REQUEST],
-                response_only=True,
-            )
+            REFBOOKS_OK_EXAMPLE,
+            REFBOOKS_BAD_REQUEST_EXAMPLE,
         ],
     )
     def list(self, request, *args, **kwargs):
@@ -97,54 +63,15 @@ class ReferenceBookElementListView(GenericViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter(
-                name='version',
-                description='Версия справочника. </br>Если не указана, '
-                            'то должны возвращаться элементы текущей версии.'
-                            'Текущей является та версия, дата начала действия которой '
-                            'позже всех остальных версий данного справочника, '
-                            'но не позже текущей даты.',
-                required=False,
-                type=OpenApiTypes.STR,
-            ),
+            VERSION_PARAMETER,
         ],
         responses={
             status.HTTP_200_OK: serializers.ReferenceBookElementSerializer,
-            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-                response=serializers.ReferenceBookElementListViewQueryParamSerializer,
-            ),
+            status.HTTP_400_BAD_REQUEST: serializers.ReferenceBookElementListViewQueryParamSerializer,
         },
         examples=[
-            OpenApiExample(
-                'OK',
-                value={
-                    "elements": [
-                        {
-                            "code": "J00",
-                            "value": " ()"
-                        },
-                        {
-                            "code": "J01",
-                            "value": " "
-                        }
-                    ]
-                }
-                ,
-                status_codes=[status.HTTP_200_OK],
-                response_only=True,
-            ),
-            OpenApiExample(
-                'Bad request',
-                summary='Ошибка отправки данных',
-                description="Убедитесь, что это значение содержит не более 50 символов.",
-                value={
-                    "version": [
-                        "Убедитесь, что это значение содержит не более 50 символов."
-                    ]
-                },
-                status_codes=[status.HTTP_400_BAD_REQUEST],
-                response_only=True,
-            )
+            ELEMENTS_LIST_OK_EXAMPLE,
+            ELEMENTS_LIST_BAD_REQUEST_EXAMPLE,
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -171,83 +98,20 @@ class ElementValidationView(GenericAPIView):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter(
-                name='code',
-                description='Код элемента справочника',
-                required=True,
-                type=OpenApiTypes.STR,
-            ),
-            OpenApiParameter(
-                name='value',
-                description='Значение элемента справочника',
-                required=True,
-                type=OpenApiTypes.STR,
-            ),
-            OpenApiParameter(
-                name='version',
-                description='Версия справочника. </br>Если не указана, '
-                            'то должны возвращаться элементы текущей версии.'
-                            'Текущей является та версия, дата начала действия которой '
-                            'позже всех остальных версий данного справочника, '
-                            'но не позже текущей даты.',
-                required=False,
-                type=OpenApiTypes.STR,
-            ),
+            CODE_PARAMETER,
+            VALUE_PARAMETER,
+            VERSION_PARAMETER,
         ],
         responses={
             status.HTTP_200_OK: inline_serializer('ElementValidationSerializer', {"exists": BooleanField()}),
             status.HTTP_400_BAD_REQUEST: serializers.ElementValidationViewQueryParamSerializer,
         },
         examples=[
-            OpenApiExample(
-                'Присутствует',
-                value={
-                    "exists": True,
-                },
-                status_codes=[status.HTTP_200_OK],
-                response_only=True,
-            ),
-            OpenApiExample(
-                'Отсутствует',
-                value={
-                    "exists": False,
-                },
-                status_codes=[status.HTTP_200_OK],
-                response_only=True,
-            ),
-            OpenApiExample(
-                'Ошибка code',
-                summary='Ошибка code',
-                value={
-                    "code": [
-                        "Обязательное поле."
-                    ]
-                },
-                status_codes=[status.HTTP_400_BAD_REQUEST],
-                response_only=True,
-            ),
-            OpenApiExample(
-                'Ошибка value',
-                summary='Ошибка value',
-                value={
-                    "value": [
-                        "Обязательное поле."
-                    ]
-                },
-                status_codes=[status.HTTP_400_BAD_REQUEST],
-                response_only=True,
-            ),
-            OpenApiExample(
-                'Ошибка version',
-                summary='Ошибка version',
-                value={
-                    "version": [
-                        "Убедитесь, что это значение содержит не более 50 символов."
-                    ]
-                },
-                status_codes=[status.HTTP_400_BAD_REQUEST],
-                response_only=True,
-            ),
+            ELEMENT_VALIDATION_EXISTS_EXAMPLE,
+            ELEMENT_VALIDATION_NOT_EXISTS_EXAMPLE,
+            ELEMENT_VALIDATION_CODE_ERROR_EXAMPLE,
+            ELEMENT_VALIDATION_VALUE_ERROR_EXAMPLE,
+            ELEMENT_VALIDATION_VERSION_ERROR_EXAMPLE,
         ],
     )
     def get(self, request, *args, **kwargs):
